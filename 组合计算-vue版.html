@@ -1,0 +1,367 @@
+<!-- 工作记录/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>数字组合计算器</title>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <!-- 添加 Tailwind CSS CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                darkMode: 'class'
+            };
+        </script>
+        <style>
+            @media (prefers-color-scheme: dark) {
+                html {
+                    color-scheme: dark;
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-gray-50 dark:bg-gray-900 min-h-screen p-8">
+        <div id="app" class="max-w-3xl mx-auto">
+            <!-- 添加暗黑模式切换按钮 -->
+            <button
+                @click="toggleDarkMode"
+                class="fixed top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+                <svg v-if="!isDarkMode" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                    />
+                </svg>
+                <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"
+                    />
+                </svg>
+            </button>
+
+            <h1 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">数字组合计算器</h1>
+
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">配置参数</h2>
+
+                <!-- 修改配置参数表格部分 -->
+                <div class="overflow-x-auto -mx-4 sm:mx-0">
+                    <div class="inline-block min-w-full align-middle">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-800">
+                                <tr>
+                                    <th
+                                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    >
+                                        数字值
+                                    </th>
+                                    <th
+                                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    >
+                                        最大使用次数
+                                    </th>
+                                    <th
+                                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    >
+                                        操作
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr v-for="(number, index) in numbers" :key="index">
+                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                        <input
+                                            type="number"
+                                            v-model.number="number.value"
+                                            placeholder="数字值"
+                                            min="1"
+                                            class="w-20 sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                        />
+                                    </td>
+                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                        <input
+                                            type="number"
+                                            v-model.number="number.maxCount"
+                                            placeholder="最大次数"
+                                            min="0"
+                                            class="w-20 sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                        />
+                                    </td>
+                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                        <button
+                                            @click="removeNumber(index)"
+                                            class="w-full sm:w-auto px-2 sm:px-4 py-1 sm:py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                                        >
+                                            删除
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <button
+                    @click="addNumber"
+                    class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors w-full"
+                >
+                    添加新数字
+                </button>
+
+                <!-- 修改目标值和优先数字选择表格 -->
+                <div class="overflow-x-auto -mx-4 sm:mx-0 mt-6">
+                    <div class="inline-block min-w-full align-middle">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr>
+                                    <td
+                                        class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200"
+                                    >
+                                        目标值：
+                                    </td>
+                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                        <input
+                                            type="number"
+                                            v-model.number="target"
+                                            min="0"
+                                            class="w-20 sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200"
+                                    >
+                                        优先使用的数字：
+                                    </td>
+                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                        <select
+                                            v-model.number="priorityNumber"
+                                            class="w-20 sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                        >
+                                            <option v-for="num in numbers" :key="num.value" :value="num.value">
+                                                {{ num.value }}
+                                            </option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <button
+                    @click="calculate"
+                    class="mt-6 px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors w-full"
+                >
+                    计算
+                </button>
+            </div>
+
+            <div v-if="result" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">计算结果</h2>
+                <div class="space-y-2 text-gray-600 dark:text-gray-300">
+                    <p>目标值: <span class="font-medium">{{ calculatedTarget }}</span></p>
+                    <p>最接近的和: <span class="font-medium">{{ result.sum }}</span></p>
+                    <p>差值: <span class="font-medium">{{ calculatedTarget - result.sum }}</span></p>
+                    <p>
+                        优先数字 <span class="font-medium">{{ priorityNumber }}</span> 使用次数:
+                        <span class="font-medium">{{ result.priorityCount }}</span>
+                    </p>
+                    <div>
+                        <p class="mb-2">使用的数字组合:</p>
+                        <ul class="list-disc pl-5">
+                            <li
+                                v-for="(count, number) in result.combination"
+                                :key="number"
+                                v-show="count > 0"
+                                class="text-gray-600 dark:text-gray-300"
+                            >
+                                {{ number }} 使用了 {{ count }} 次
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const { createApp, ref, computed, onMounted, reactive, toRefs } = Vue;
+
+            const debounce = (fn, delay = 300) => {
+                let timer = null;
+                return (...args) => {
+                    if (timer) clearTimeout(timer);
+                    timer = setTimeout(() => fn(...args), delay);
+                };
+            };
+
+            const initDarkMode = () => {
+                const savedMode = localStorage.getItem('darkMode');
+                if (savedMode !== null) {
+                    state.isDarkMode = JSON.parse(savedMode);
+                    updateDarkMode(state.isDarkMode);
+                } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    state.isDarkMode = true;
+                    updateDarkMode(true);
+                }
+            };
+
+            const updateDarkMode = (isDark) => {
+                document.documentElement.classList.toggle('dark', isDark);
+                localStorage.setItem('darkMode', JSON.stringify(isDark));
+            };
+
+            const toggleDarkMode = () => {
+                state.isDarkMode = !state.isDarkMode;
+                updateDarkMode(state.isDarkMode);
+            };
+
+            createApp({
+                setup() {
+                    const state = reactive({
+                        numbers: [
+                            { value: 998, maxCount: 3 },
+                            { value: 358, maxCount: 999999 },
+                            { value: 258, maxCount: 999999 },
+                            { value: 198, maxCount: 999999 }
+                        ],
+                        target: 6270,
+                        priorityNumber: 358,
+                        result: null,
+                        isDarkMode: false,
+                        calculatedTarget: null
+                    });
+
+                    const computedProps = {
+                        isValidConfig: computed(() => !state.numbers.some((num) => num.value <= 1)),
+                        isValidTarget: computed(() => state.target >= state.priorityNumber),
+                        availableNumbers: computed(() => state.numbers.map((n) => n.value)),
+                        sortedCombination: computed(() => {
+                            if (!state.result) return [];
+                            return Object.entries(state.result.combination)
+                                .filter(([_, count]) => count > 0)
+                                .sort((a, b) => b[1] - a[1]);
+                        })
+                    };
+
+                    const validateInput = () => {
+                        if (!computedProps.isValidConfig.value) {
+                            throw new Error('配置参数必须大于1，请检查！');
+                        }
+                        if (!computedProps.isValidTarget.value) {
+                            throw new Error('目标值必须大于等于优先使用的数字！');
+                        }
+                    };
+
+                    const addNumber = () => {
+                        state.numbers.push({ value: 1, maxCount: 999999 }); // 将初始值从0改为1
+                    };
+
+                    const removeNumber = (index) => {
+                        if (state.numbers.length > 1) {
+                            state.numbers.splice(index, 1);
+                        } else {
+                            alert('至少需要保留一个数字！');
+                        }
+                    };
+
+                    const findOptimalSum = (target, config) => {
+                        let bestResult = {
+                            sum: 0,
+                            priorityCount: 0,
+                            combination: {}
+                        };
+
+                        // 初始化组合对象
+                        config.numbers.forEach((num) => {
+                            bestResult.combination[num.value] = 0;
+                        });
+
+                        // 找到优先数字的配置
+                        const priorityNumConfig = config.numbers.find((n) => n.value === config.priorityNumber);
+                        if (!priorityNumConfig) return bestResult;
+
+                        // 确保优先数字至少使用1次，所以从1开始循环
+                        for (let priorityCount = 1; priorityCount <= priorityNumConfig.maxCount; priorityCount++) {
+                            let remaining = target - priorityCount * config.priorityNumber;
+                            if (remaining < 0) break;
+
+                            let currentCombination = { [config.priorityNumber]: priorityCount };
+                            let currentSum = priorityCount * config.priorityNumber;
+
+                            // 对剩余的数字按从大到小排序（排除优先数字）
+                            const otherNumbers = config.numbers
+                                .filter((n) => n.value !== config.priorityNumber)
+                                .sort((a, b) => b.value - a.value);
+
+                            // 处理其他数字
+                            for (const num of otherNumbers) {
+                                const count = Math.floor(remaining / num.value);
+                                const limitedCount = Math.min(count, num.maxCount);
+                                currentCombination[num.value] = limitedCount;
+                                currentSum += limitedCount * num.value;
+                                remaining -= limitedCount * num.value;
+                            }
+
+                            // 更新最佳结果
+                            if (
+                                currentSum <= target &&
+                                (bestResult.sum === 0 || // 第一个有效结果
+                                    currentSum > bestResult.sum || // 更大的和
+                                    (currentSum === bestResult.sum && priorityCount > bestResult.priorityCount)) // 相同和但优先数字使用更多
+                            ) {
+                                bestResult = {
+                                    sum: currentSum,
+                                    priorityCount: priorityCount,
+                                    combination: { ...currentCombination }
+                                };
+                            }
+                        }
+
+                        return bestResult;
+                    };
+
+                    const calculate = () => {
+                        try {
+                            validateInput();
+                            state.calculatedTarget = state.target;
+
+                            const config = {
+                                numbers: state.numbers,
+                                priorityNumber: state.priorityNumber
+                            };
+
+                            state.result = findOptimalSum(state.calculatedTarget, config);
+                        } catch (error) {
+                            alert(error.message);
+                        }
+                    };
+
+                    const debouncedCalculate = debounce(calculate);
+
+                    // 检查系统暗黑模式
+                    onMounted(() => {
+                        initDarkMode();
+                    });
+
+                    return {
+                        ...toRefs(state),
+                        ...computedProps,
+                        addNumber,
+                        removeNumber,
+                        calculate: debouncedCalculate,
+                        toggleDarkMode
+                    };
+                }
+            }).mount('#app');
+        </script>
+    </body>
+</html>
