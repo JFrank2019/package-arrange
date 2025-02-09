@@ -17,29 +17,37 @@ const DEFAULT_CONFIG = {
     { value: 998, maxCount: 3 },
     { value: 358, maxCount: 999999 },
     { value: 258, maxCount: 999999 },
-    { value: 198, maxCount: 999999 }
+    { value: 198, maxCount: 999999 },
   ],
   target: 0,
-  priorityNumber: 358
+  priorityNumber: 358,
 }
 
-// 优化防抖函数
-const debounce = (fn: Function, delay = 300, options = {}) => {
+interface DebounceOptions {
+  immediate?: boolean
+}
+
+function debounce<T extends (...args: any[]) => any>(
+  fn: T,
+  delay: number,
+  options: DebounceOptions = {},
+) {
   let timer: NodeJS.Timeout | null = null
-  let lastArgs: any[] | null = null
 
-  return (...args: any[]) => {
-    lastArgs = args
-    if (timer) clearTimeout(timer)
-
+  return function (this: any, ...args: Parameters<T>) {
     if (options.immediate && !timer) {
-      fn(...args)
+      fn.apply(this, args)
+    }
+
+    if (timer) {
+      clearTimeout(timer)
     }
 
     timer = setTimeout(() => {
-      if (lastArgs === args) {
-        fn(...args)
+      if (!options.immediate) {
+        fn.apply(this, args)
       }
+      timer = null
     }, delay)
   }
 }
@@ -50,7 +58,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
     { value: 998, maxCount: 3 },
     { value: 358, maxCount: 999999 },
     { value: 258, maxCount: 999999 },
-    { value: 198, maxCount: 999999 }
+    { value: 198, maxCount: 999999 },
   ])
   const target = ref(0)
   const priorityNumber = ref(358)
@@ -114,7 +122,9 @@ export const useCalculatorStore = defineStore('calculator', () => {
     const numMap = new Map()
     numbers.value.forEach((num, index) => {
       if (numMap.has(num.value)) {
-        newErrors.push(`数字 ${num.value} 在第 ${numMap.get(num.value) + 1} 和第 ${index + 1} 行重复`)
+        newErrors.push(
+          `数字 ${num.value} 在第 ${numMap.get(num.value) + 1} 和第 ${index + 1} 行重复`,
+        )
       }
       numMap.set(num.value, index)
     })
@@ -135,12 +145,15 @@ export const useCalculatorStore = defineStore('calculator', () => {
     }
   }
 
-  const findOptimalSum = (targetValue: number, config: { numbers: NumberConfig[]; priorityNumber: number }) => {
+  const findOptimalSum = (
+    targetValue: number,
+    config: { numbers: NumberConfig[]; priorityNumber: number },
+  ) => {
     // 初始化结果对象
     const calcResult: CalculationResult = {
       sum: 0,
       priorityCount: 0,
-      combination: {}
+      combination: {},
     }
 
     config.numbers.forEach((num) => {
@@ -151,14 +164,14 @@ export const useCalculatorStore = defineStore('calculator', () => {
     const dp = new Array(targetValue + 1).fill(null).map(() => ({
       possible: false,
       priorityCount: 0,
-      combination: {} as Record<number, number>
+      combination: {} as Record<number, number>,
     }))
 
     // 初始化起点
     dp[0] = {
       possible: true,
       priorityCount: 0,
-      combination: Object.fromEntries(config.numbers.map((num) => [num.value, 0]))
+      combination: Object.fromEntries(config.numbers.map((num) => [num.value, 0])),
     }
 
     // 对每个金额进行计算
@@ -186,7 +199,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
             dp[newAmount] = {
               possible: true,
               priorityCount: newPriorityCount,
-              combination: newCombination
+              combination: newCombination,
             }
           }
         }
@@ -207,7 +220,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
   }
 
   const calculateResult = async () => {
-    const cacheKey = `${target.value}-${numbers.value.map(n => `${n.value},${n.maxCount}`).join(';')}-${priorityNumber.value}`
+    const cacheKey = `${target.value}-${numbers.value.map((n) => `${n.value},${n.maxCount}`).join(';')}-${priorityNumber.value}`
 
     if (resultCache.has(cacheKey)) {
       const cachedResult = resultCache.get(cacheKey)
@@ -217,7 +230,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
 
     const config = {
       numbers: numbers.value,
-      priorityNumber: priorityNumber.value
+      priorityNumber: priorityNumber.value,
     }
 
     result.value = findOptimalSum(target.value, config)
@@ -226,7 +239,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
     cleanCache()
     resultCache.set(cacheKey, {
       result: JSON.parse(JSON.stringify(result.value)),
-      lastUsed: Date.now()
+      lastUsed: Date.now(),
     })
 
     return result.value
@@ -249,7 +262,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
     const dataToSave = {
       numbers: numbers.value,
       target: target.value,
-      priorityNumber: priorityNumber.value
+      priorityNumber: priorityNumber.value,
     }
     localStorage.setItem('calculatorState', JSON.stringify(dataToSave))
   }
@@ -276,13 +289,13 @@ export const useCalculatorStore = defineStore('calculator', () => {
     () => ({
       numbers: [...numbers.value],
       target: target.value,
-      priorityNumber: priorityNumber.value
+      priorityNumber: priorityNumber.value,
     }),
     () => {
       validateInputRealTime()
       debouncedCalculate()
     },
-    { deep: true }
+    { deep: true },
   )
 
   return {
@@ -305,6 +318,6 @@ export const useCalculatorStore = defineStore('calculator', () => {
     $reset,
     loadStateFromLocalStorage,
     saveStateToLocalStorage,
-    debouncedCalculate
+    debouncedCalculate,
   }
 })
