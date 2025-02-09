@@ -5,6 +5,10 @@ on:
     branches:
       - main # 设置要部署的分支
 
+# 添加权限设置
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
