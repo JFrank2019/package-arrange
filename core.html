@@ -19,10 +19,79 @@
                     color-scheme: dark;
                 }
             }
+
+            /* 添加更流畅的暗色模式过渡 */
+            html {
+                transition: background-color 0.3s ease-in-out;
+            }
+
+            body {
+                transition: background-color 0.3s ease-in-out;
+            }
+
+            /* 优化输入框样式 */
+            input[type="number"] {
+                transition: all 0.2s ease-in-out;
+            }
+
+            input[type="number"]:focus {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            /* 原有的涟漪效果保持不变 */
+            .ripple {
+                position: relative;
+                overflow: hidden;
+                transform: translate3d(0, 0, 0);
+            }
+
+            .ripple:after {
+                content: "";
+                display: block;
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                pointer-events: none;
+                background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+                background-repeat: no-repeat;
+                background-position: 50%;
+                transform: scale(10, 10);
+                opacity: 0;
+                transition: transform .5s, opacity 1s;
+            }
+
+            .ripple:active:after {
+                transform: scale(0, 0);
+                opacity: .3;
+                transition: 0s;
+            }
+
+            /* 优化表格样式 */
+            table {
+                transition: background-color 0.3s ease-in-out;
+            }
+
+            td, th {
+                transition: all 0.3s ease-in-out;
+            }
+
+            /* 优化错误提示动画 */
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+
+            .error-shake {
+                animation: shake 0.5s ease-in-out;
+            }
         </style>
     </head>
     <body class="bg-gray-50 dark:bg-gray-900 min-h-screen p-8">
-        <div id="app" class="max-w-3xl mx-auto">
+        <div id="app" class="max-w-3xl mx-auto space-y-8">
             <!-- 添加暗黑模式切换按钮 -->
             <button
                 @click="toggleDarkMode"
@@ -49,319 +118,757 @@
             <h1 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">数字组合计算器</h1>
 
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
-                <h2 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">配置参数</h2>
-
-                <!-- 修改配置参数表格部分 -->
-                <div class="overflow-x-auto -mx-4 sm:mx-0">
-                    <div class="inline-block min-w-full align-middle">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-800">
-                                <tr>
-                                    <th
-                                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                                    >
-                                        数字值
-                                    </th>
-                                    <th
-                                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                                    >
-                                        最大使用次数
-                                    </th>
-                                    <th
-                                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                                    >
-                                        操作
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                <tr v-for="(number, index) in numbers" :key="index">
-                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                                        <input
-                                            type="number"
-                                            v-model.number="number.value"
-                                            placeholder="数字值"
-                                            min="1"
-                                            class="w-20 sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                                        />
-                                    </td>
-                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                                        <input
-                                            type="number"
-                                            v-model.number="number.maxCount"
-                                            placeholder="最大次数"
-                                            min="0"
-                                            class="w-20 sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                                        />
-                                    </td>
-                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                                        <button
-                                            @click="removeNumber(index)"
-                                            class="w-full sm:w-auto px-2 sm:px-4 py-1 sm:py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                                        >
-                                            删除
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200">配置参数</h2>
+                    <div class="space-x-2">
+                        <button
+                            v-if="!isEditing"
+                            @click="exportNumbers"
+                            class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                        >
+                            批量编辑
+                        </button>
+                        <button
+                            @click="resetCalculator"
+                            class="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                        >
+                            重置
+                        </button>
                     </div>
                 </div>
 
-                <button
-                    @click="addNumber"
-                    class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors w-full"
-                >
-                    添加新数字
-                </button>
-
-                <!-- 修改目标值和优先数字选择表格 -->
-                <div class="overflow-x-auto -mx-4 sm:mx-0 mt-6">
-                    <div class="inline-block min-w-full align-middle">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                <tr>
-                                    <td
-                                        class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200"
-                                    >
-                                        目标值：
-                                    </td>
-                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                                        <input
-                                            type="number"
-                                            v-model.number="target"
-                                            min="0"
-                                            class="w-20 sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                                        />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td
-                                        class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200"
-                                    >
-                                        优先使用的数字：
-                                    </td>
-                                    <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                                        <select
-                                            v-model.number="priorityNumber"
-                                            class="w-20 sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                                        >
-                                            <option v-for="num in numbers" :key="num.value" :value="num.value">
-                                                {{ num.value }}
-                                            </option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- 批量编辑模式 -->
+                <div v-if="isEditing" class="mb-4">
+                    <div class="mb-2 text-sm text-gray-600 dark:text-gray-400">
+                        每行输入一个数字配置，格式：数字,最大次数（最大次数可选，默认999999）
+                    </div>
+                    <textarea
+                        v-model="tempNumbers"
+                        class="w-full h-40 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        placeholder="例如：&#13;&#10;998,3&#13;&#10;358&#13;&#10;258&#13;&#10;198"
+                    ></textarea>
+                    <div class="flex justify-end space-x-2 mt-2">
+                        <button
+                            @click="isEditing = false; tempNumbers = ''"
+                            class="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                        >
+                            取消
+                        </button>
+                        <button
+                            @click="importNumbers"
+                            class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                        >
+                            保存
+                        </button>
                     </div>
                 </div>
 
-                <button
-                    @click="calculate"
-                    class="mt-6 px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors w-full"
-                >
-                    计算
-                </button>
+                <!-- 常规编辑模式 -->
+                <div v-else>
+                    <div class="overflow-x-auto -mx-4 sm:mx-0">
+                        <div class="inline-block min-w-full align-middle">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-800">
+                                    <tr>
+                                        <th
+                                            class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                        >
+                                            数字值
+                                        </th>
+                                        <th
+                                            class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                        >
+                                            最大使用次数
+                                        </th>
+                                        <th
+                                            class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                        >
+                                            操作
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr v-for="(number, index) in numbers" :key="index">
+                                        <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                            <input
+                                                type="number"
+                                                v-model.number="number.value"
+                                                placeholder="数字值"
+                                                min="1"
+                                                class="w-full sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                            />
+                                        </td>
+                                        <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                            <input
+                                                type="number"
+                                                v-model.number="number.maxCount"
+                                                placeholder="最大次数"
+                                                min="0"
+                                                class="w-full sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                            />
+                                        </td>
+                                        <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                            <button
+                                                @click="removeNumber(index)"
+                                                class="w-full sm:w-auto px-2 sm:px-4 py-1 sm:py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                                            >
+                                                删除
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <button
+                        @click="addNumber"
+                        class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors w-full"
+                    >
+                        添加新数字
+                    </button>
+
+                    <!-- 修改目标值和优先数字选择表格 -->
+                    <div class="overflow-x-auto -mx-4 sm:mx-0 mt-6">
+                        <div class="inline-block min-w-full align-middle">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr>
+                                        <td
+                                            class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200"
+                                        >
+                                            目标值：
+                                        </td>
+                                        <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                            <input
+                                                type="number"
+                                                v-model.number="target"
+                                                min="0"
+                                                class="w-full sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                                :class="{ 'border-red-500': errors.includes('目标值不能为负数') }"
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td
+                                            class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200"
+                                        >
+                                            优先使用的数字：
+                                        </td>
+                                        <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                            <select
+                                                v-model.number="priorityNumber"
+                                                class="w-full sm:w-32 p-1 sm:p-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                            >
+                                                <option v-for="num in numbers" :key="num.value" :value="num.value">
+                                                    {{ num.value }}
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div v-if="result" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">计算结果</h2>
-                <div class="space-y-2 text-gray-600 dark:text-gray-300">
-                    <p>目标值: <span class="font-medium">{{ calculatedTarget }}</span></p>
-                    <p>最接近的和: <span class="font-medium">{{ result.sum }}</span></p>
-                    <p>差值: <span class="font-medium">{{ calculatedTarget - result.sum }}</span></p>
-                    <p>
-                        优先数字 <span class="font-medium">{{ priorityNumber }}</span> 使用次数:
-                        <span class="font-medium">{{ result.priorityCount }}</span>
-                    </p>
-                    <div>
-                        <p class="mb-2">使用的数字组合:</p>
-                        <ul class="list-disc pl-5">
-                            <li
-                                v-for="(count, number) in result.combination"
+            <!-- 修改错误提示和计算按钮部分的布局 -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <div class="space-y-4">
+                    <!-- 添加错误提示组件 -->
+                    <div v-if="errors.length > 0 && userInteracted"
+                         class="bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200 p-4 rounded transform transition-all duration-300 error-shake"
+                         :class="calculating ? 'scale-105 shadow-lg' : ''"
+                    >
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <div>
+                                <p class="font-bold mb-2">请检查以下错误：</p>
+                                <ul class="list-disc pl-5 space-y-1">
+                                    <li v-for="(error, index) in errors" :key="index"
+                                        class="transform transition-all duration-300 hover:translate-x-1">
+                                        {{ error }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 修改计算按钮，添加更好的禁用状态样式 -->
+                    <button
+                        @click="calculate"
+                        :disabled="calculating || errors.length > 0"
+                        class="ripple px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-500 text-lg font-medium relative overflow-hidden shadow-md hover:shadow-lg"
+                    >
+                        <span v-if="calculating" class="flex items-center justify-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            计算中...
+                        </span>
+                        <span v-else>计算</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 优化结果显示，只在有结果且计算完成时显示 -->
+            <div v-if="result && calculatedTarget !== null"
+                 class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mt-8 calculation-result transition-opacity duration-300"
+                 :class="{'opacity-0': calculating, 'opacity-100': !calculating}">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200">计算结果</h2>
+                    <button
+                        @click="result = null; calculatedTarget = null"
+                        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="space-y-6">
+                    <!-- 数据概览卡片 -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">目标值</p>
+                            <p class="text-2xl font-semibold text-gray-800 dark:text-gray-100">{{ calculatedTarget }}</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">最接近的和</p>
+                            <p class="text-2xl font-semibold text-gray-800 dark:text-gray-100">{{ result.sum }}</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">差值</p>
+                            <p class="text-2xl font-semibold"
+                               :class="calculatedTarget - result.sum === 0 ? 'text-green-500' : 'text-red-500'">
+                                {{ calculatedTarget - result.sum }}
+                            </p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">优先数字使用次数</p>
+                            <p class="text-2xl font-semibold text-blue-500">
+                                {{ priorityNumber }}: {{ result.priorityCount }}次
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 数字组合结果 -->
+                    <div class="border-t dark:border-gray-700 pt-6">
+                        <p class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-4">使用的数字组合</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <div v-for="[number, count] in sortedCombination"
                                 :key="number"
-                                v-show="count > 0"
-                                class="text-gray-600 dark:text-gray-300"
+                                class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm flex justify-between items-center"
+                                :class="[
+                                    number == priorityNumber
+                                        ? 'ring-2 ring-blue-500 dark:ring-blue-400'
+                                        : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                                ]"
                             >
-                                {{ number }} 使用了 {{ count }} 次
-                            </li>
-                        </ul>
+                                <span class="text-lg font-medium" :class="number == priorityNumber ? 'text-blue-500' : 'text-gray-700 dark:text-gray-200'">
+                                    {{ number }}
+                                </span>
+                                <span class="text-gray-500 dark:text-gray-400 font-medium">× {{ count }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <script>
-            const { createApp, ref, computed, onMounted, reactive, toRefs } = Vue;
+    <script>
+        const { createApp, ref, computed, onMounted, reactive, toRefs, markRaw, nextTick, watch } = Vue;
 
-            const debounce = (fn, delay = 300) => {
-                let timer = null;
-                return (...args) => {
-                    if (timer) clearTimeout(timer);
-                    timer = setTimeout(() => fn(...args), delay);
-                };
-            };
+        // 优化防抖函数
+        const debounce = (fn, delay = 300, options = {}) => {
+            let timer = null;
+            let lastArgs = null;
 
-            const initDarkMode = () => {
-                const savedMode = localStorage.getItem('darkMode');
-                if (savedMode !== null) {
-                    state.isDarkMode = JSON.parse(savedMode);
-                    updateDarkMode(state.isDarkMode);
-                } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    state.isDarkMode = true;
-                    updateDarkMode(true);
+            return (...args) => {
+                lastArgs = args;
+                if (timer) clearTimeout(timer);
+
+                if (options.immediate && !timer) {
+                    fn(...args);
                 }
-            };
 
-            const updateDarkMode = (isDark) => {
-                document.documentElement.classList.toggle('dark', isDark);
-                localStorage.setItem('darkMode', JSON.stringify(isDark));
+                timer = setTimeout(() => {
+                    if (lastArgs === args) {
+                        fn(...args);
+                    }
+                }, delay);
             };
+        };
 
-            const toggleDarkMode = () => {
-                state.isDarkMode = !state.isDarkMode;
-                updateDarkMode(state.isDarkMode);
-            };
+        // 使用 markRaw 标记不需要响应式的大数据
+        const DEFAULT_CONFIG = markRaw({
+            numbers: [
+                { value: 998, maxCount: 3 },
+                { value: 358, maxCount: 999999 },
+                { value: 258, maxCount: 999999 },
+                { value: 198, maxCount: 999999 }
+            ]
+        });
 
-            createApp({
-                setup() {
-                    const state = reactive({
-                        numbers: [
-                            { value: 998, maxCount: 3 },
-                            { value: 358, maxCount: 999999 },
-                            { value: 258, maxCount: 999999 },
-                            { value: 198, maxCount: 999999 }
-                        ],
-                        target: 6270,
-                        priorityNumber: 358,
-                        result: null,
-                        isDarkMode: false,
-                        calculatedTarget: null
+        createApp({
+            setup() {
+                const state = reactive({
+                    numbers: [...DEFAULT_CONFIG.numbers],
+                    target: 0,
+                    priorityNumber: 358,
+                    result: null,
+                    isDarkMode: false,
+                    calculatedTarget: null,
+                    errors: [], // 添加错误状态
+                    calculating: false, // 添加计算状态
+                    isEditing: false,
+                    tempNumbers: '', // 用于批量编辑
+                    userInteracted: false // 添加用户交互状态标记
+                });
+
+                const initDarkMode = () => {
+                    const savedMode = localStorage.getItem('darkMode');
+                    if (savedMode !== null) {
+                        state.isDarkMode = JSON.parse(savedMode);
+                        updateDarkMode(state.isDarkMode);
+                    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        state.isDarkMode = true;
+                        updateDarkMode(true);
+                    }
+                };
+
+                const updateDarkMode = (isDark) => {
+                    document.documentElement.classList.toggle('dark', isDark);
+                    localStorage.setItem('darkMode', JSON.stringify(isDark));
+                };
+
+                const toggleDarkMode = () => {
+                    state.isDarkMode = !state.isDarkMode;
+                    updateDarkMode(state.isDarkMode);
+                };
+
+                const saveStateToLocalStorage = () => {
+                    const dataToSave = {
+                        numbers: state.numbers,
+                        target: state.target,
+                        priorityNumber: state.priorityNumber
+                    };
+                    localStorage.setItem('calculatorState', JSON.stringify(dataToSave));
+                };
+
+                const loadStateFromLocalStorage = () => {
+                    const savedState = localStorage.getItem('calculatorState');
+                    if (savedState) {
+                        const parsedState = JSON.parse(savedState);
+                        state.numbers = parsedState.numbers;
+                        state.target = parsedState.target;
+                        state.priorityNumber = parsedState.priorityNumber;
+                    }
+                };
+
+                // 监听数据变化并保存
+                watch(
+                    () => ({
+                        numbers: [...state.numbers],
+                        target: state.target,
+                        priorityNumber: state.priorityNumber
+                    }),
+                    () => saveStateToLocalStorage(),
+                    { deep: true }
+                );
+
+                // 在组件挂载时加载保存的状态
+                onMounted(() => {
+                    initDarkMode();
+                    loadStateFromLocalStorage();
+
+                    // 监听系统主题变化
+                    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                        if (localStorage.getItem('darkMode') === null) {
+                            state.isDarkMode = e.matches;
+                            updateDarkMode(e.matches);
+                        }
+                    });
+                });
+
+                const computedProps = {
+                    isValidConfig: computed(() => !state.numbers.some((num) => num.value <= 1)),
+                    availableNumbers: computed(() => state.numbers.map((n) => n.value)),
+                    sortedCombination: computed(() => {
+                        if (!state.result) return [];
+                        return Object.entries(state.result.combination)
+                            .filter(([_, count]) => count > 0)
+                            .sort((a, b) => b[1] - a[1]);
+                    })
+                };
+
+                const validateInput = () => {
+                    const errors = [];
+
+                    if (!computedProps.isValidConfig.value) {
+                        errors.push('配置参数必须大于1');
+                    }
+                    if (state.target < 0) {
+                        errors.push('目标值不能为负数');
+                    }
+                    if (state.numbers.length === 0) {
+                        errors.push('至少需要一个数字');
+                    }
+                    if (!state.numbers.find(n => n.value === state.priorityNumber)) {
+                        errors.push('优先数字必须在可用数字列表中');
+                    }
+                    // 检查重复数字
+                    const uniqueValues = new Set(state.numbers.map(n => n.value));
+                    if (uniqueValues.size !== state.numbers.length) {
+                        errors.push('数字值不能重复');
+                    }
+                    // 检查最大使用次数
+                    if (state.numbers.some(n => n.maxCount <= 0)) {
+                        errors.push('最大使用次数必须大于0');
+                    }
+
+                    if (errors.length > 0) {
+                        throw new Error(errors.join('\n'));
+                    }
+                };
+
+                const validateInputRealTime = computed(() => {
+                    const errors = [];
+
+                    if (state.target < 0) {
+                        errors.push('目标值不能为负数');
+                    }
+
+                    state.numbers.forEach((num, index) => {
+                        if (num.value <= 1) {
+                            errors.push(`第 ${index + 1} 个数字必须大于1`);
+                        }
+                        if (num.maxCount <= 0) {
+                            errors.push(`第 ${index + 1} 个数字的最大使用次数必须大于0`);
+                        }
                     });
 
-                    const computedProps = {
-                        isValidConfig: computed(() => !state.numbers.some((num) => num.value <= 1)),
-                        isValidTarget: computed(() => state.target >= state.priorityNumber),
-                        availableNumbers: computed(() => state.numbers.map((n) => n.value)),
-                        sortedCombination: computed(() => {
-                            if (!state.result) return [];
-                            return Object.entries(state.result.combination)
-                                .filter(([_, count]) => count > 0)
-                                .sort((a, b) => b[1] - a[1]);
-                        })
-                    };
-
-                    const validateInput = () => {
-                        if (!computedProps.isValidConfig.value) {
-                            throw new Error('配置参数必须大于1，请检查！');
+                    // 检查重复数字
+                    const numMap = new Map();
+                    state.numbers.forEach((num, index) => {
+                        if (numMap.has(num.value)) {
+                            errors.push(`数字 ${num.value} 在第 ${numMap.get(num.value) + 1} 和第 ${index + 1} 行重复`);
                         }
-                        if (!computedProps.isValidTarget.value) {
-                            throw new Error('目标值必须大于等于优先使用的数字！');
-                        }
+                        numMap.set(num.value, index);
+                    });
+
+                    return errors;
+                });
+
+                // 监听实时验证结果
+                watch(validateInputRealTime, (errors) => {
+                    state.errors = errors;
+                });
+
+                const addNumber = () => {
+                    state.numbers.push({ value: 1, maxCount: 999999 }); // 将初始值从0改为1
+                };
+
+                const removeNumber = (index) => {
+                    if (state.numbers.length > 1) {
+                        state.numbers.splice(index, 1);
+                    } else {
+                        alert('至少需要保留一个数字！');
+                    }
+                };
+
+                // 添加结果缓存
+                const resultCache = new Map();
+
+                const getCacheKey = (target, numbers, priorityNumber) => {
+                    return `${target}-${numbers.map(n => `${n.value},${n.maxCount}`).join(';')}-${priorityNumber}`;
+                };
+
+                // 添加缓存管理机制
+                const MAX_CACHE_SIZE = 1000; // 最大缓存条目数
+
+                const cleanCache = () => {
+                    if (resultCache.size > MAX_CACHE_SIZE) {
+                        const cacheEntries = Array.from(resultCache.entries());
+                        const sortedEntries = cacheEntries.sort((a, b) => b[1].lastUsed - a[1].lastUsed);
+                        const entriesToDelete = sortedEntries.slice(MAX_CACHE_SIZE / 2);
+                        entriesToDelete.forEach(([key]) => resultCache.delete(key));
+                    }
+                };
+
+                const findOptimalSum = (target, config) => {
+                    const cacheKey = getCacheKey(target, config.numbers, config.priorityNumber);
+
+                    if (resultCache.has(cacheKey)) {
+                        const cachedResult = resultCache.get(cacheKey);
+                        cachedResult.lastUsed = Date.now();
+                        return JSON.parse(JSON.stringify(cachedResult.result));
+                    }
+
+                    // 初始化结果对象
+                    const result = {
+                        sum: 0,
+                        priorityCount: 0,
+                        combination: {}
                     };
 
-                    const addNumber = () => {
-                        state.numbers.push({ value: 1, maxCount: 999999 }); // 将初始值从0改为1
+                    config.numbers.forEach((num) => {
+                        result.combination[num.value] = 0;
+                    });
+
+                    // 创建 DP 数组，dp[i][j] 表示金额i能否被组成，以及组成方案
+                    const dp = new Array(target + 1).fill(null).map(() => ({
+                        possible: false,
+                        priorityCount: 0,
+                        combination: {}
+                    }));
+
+                    // 初始化起点
+                    dp[0] = {
+                        possible: true,
+                        priorityCount: 0,
+                        combination: Object.fromEntries(config.numbers.map((num) => [num.value, 0]))
                     };
 
-                    const removeNumber = (index) => {
-                        if (state.numbers.length > 1) {
-                            state.numbers.splice(index, 1);
-                        } else {
-                            alert('至少需要保留一个数字！');
-                        }
-                    };
+                    // 对每个金额进行计算
+                    for (let i = 0; i <= target; i++) {
+                        if (!dp[i].possible) continue;
 
-                    const findOptimalSum = (target, config) => {
-                        let bestResult = {
-                            sum: 0,
-                            priorityCount: 0,
-                            combination: {}
-                        };
+                        // 尝试每个数字
+                        for (const num of config.numbers) {
+                            const value = num.value;
+                            const maxCount = num.maxCount;
 
-                        // 初始化组合对象
-                        config.numbers.forEach((num) => {
-                            bestResult.combination[num.value] = 0;
-                        });
+                            // 检查当前组合中该数字的使用次数
+                            const currentCount = dp[i].combination[value];
 
-                        // 找到优先数字的配置
-                        const priorityNumConfig = config.numbers.find((n) => n.value === config.priorityNumber);
-                        if (!priorityNumConfig) return bestResult;
+                            // 如果未达到最大使用次数且金额足够，可以继续使用该数字
+                            if (currentCount < maxCount && i + value <= target) {
+                                const newAmount = i + value;
+                                const newPriorityCount =
+                                    dp[i].priorityCount + (value === config.priorityNumber ? 1 : 0);
 
-                        // 确保优先数字至少使用1次，所以从1开始循环
-                        for (let priorityCount = 1; priorityCount <= priorityNumConfig.maxCount; priorityCount++) {
-                            let remaining = target - priorityCount * config.priorityNumber;
-                            if (remaining < 0) break;
+                                // 更新条件：
+                                // 1. 该金额之前未被组成，或
+                                // 2. 新方案使用了更多的优先数字
+                                if (!dp[newAmount].possible || newPriorityCount > dp[newAmount].priorityCount) {
+                                    const newCombination = { ...dp[i].combination };
+                                    newCombination[value]++;
 
-                            let currentCombination = { [config.priorityNumber]: priorityCount };
-                            let currentSum = priorityCount * config.priorityNumber;
-
-                            // 对剩余的数字按从大到小排序（排除优先数字）
-                            const otherNumbers = config.numbers
-                                .filter((n) => n.value !== config.priorityNumber)
-                                .sort((a, b) => b.value - a.value);
-
-                            // 处理其他数字
-                            for (const num of otherNumbers) {
-                                const count = Math.floor(remaining / num.value);
-                                const limitedCount = Math.min(count, num.maxCount);
-                                currentCombination[num.value] = limitedCount;
-                                currentSum += limitedCount * num.value;
-                                remaining -= limitedCount * num.value;
+                                    dp[newAmount] = {
+                                        possible: true,
+                                        priorityCount: newPriorityCount,
+                                        combination: newCombination
+                                    };
+                                }
                             }
-
-                            // 更新最佳结果
-                            if (
-                                currentSum <= target &&
-                                (bestResult.sum === 0 || // 第一个有效结果
-                                    currentSum > bestResult.sum || // 更大的和
-                                    (currentSum === bestResult.sum && priorityCount > bestResult.priorityCount)) // 相同和但优先数字使用更多
-                            ) {
-                                bestResult = {
-                                    sum: currentSum,
-                                    priorityCount: priorityCount,
-                                    combination: { ...currentCombination }
-                                };
-                            }
                         }
+                    }
 
-                        return bestResult;
-                    };
+                    // 从目标值向下找到最接近的可能解
+                    let bestSum = 0;
+                    for (let i = target; i >= 0; i--) {
+                        if (dp[i].possible) {
+                            bestSum = i;
+                            result.sum = i;
+                            result.priorityCount = dp[i].priorityCount;
+                            result.combination = dp[i].combination;
+                            break;
+                        }
+                    }
 
-                    const calculate = () => {
-                        try {
-                            validateInput();
-                            state.calculatedTarget = state.target;
+                    cleanCache(); // 清理缓存
+                    resultCache.set(cacheKey, {
+                        result: JSON.parse(JSON.stringify(result)),
+                        lastUsed: Date.now()
+                    });
+
+                    return result;
+                };
+
+                // 添加计算结果的异步加载
+                const calculateAsync = () => {
+                    return new Promise(resolve => {
+                        // 使用 nextTick 确保 DOM 更新后再进行计算
+                        nextTick(() => {
+                            if (validateInputRealTime.value.length > 0) {
+                                resolve(null);
+                                return;
+                            }
 
                             const config = {
                                 numbers: state.numbers,
                                 priorityNumber: state.priorityNumber
                             };
 
-                            state.result = findOptimalSum(state.calculatedTarget, config);
-                        } catch (error) {
-                            alert(error.message);
-                        }
-                    };
-
-                    const debouncedCalculate = debounce(calculate);
-
-                    // 检查系统暗黑模式
-                    onMounted(() => {
-                        initDarkMode();
+                            resolve(findOptimalSum(state.calculatedTarget, config));
+                        });
                     });
+                };
 
-                    return {
-                        ...toRefs(state),
-                        ...computedProps,
-                        addNumber,
-                        removeNumber,
-                        calculate: debouncedCalculate,
-                        toggleDarkMode
-                    };
-                }
-            }).mount('#app');
-        </script>
-    </body>
+                // 修改计算函数，添加加载状态指示和结果出现的动画效果
+                const calculate = async () => {
+                    if (state.calculating) return;
+
+                    // 重置之前的结果
+                    state.result = null;
+                    state.calculatedTarget = null;
+                    state.errors = [];
+                    state.calculating = true;
+
+                    try {
+                        validateInput();
+                        await new Promise(resolve => setTimeout(resolve, 300)); // 添加短暂延迟以展示加载状态
+                        state.calculatedTarget = state.target;
+                        state.result = await calculateAsync();
+
+                        if (!state.result) {
+                            throw new Error('计算失败，请检查输入参数');
+                        }
+
+                        // 计算成功后滚动到结果区域
+                        nextTick(() => {
+                            const resultElement = document.querySelector('.calculation-result');
+                            if (resultElement) {
+                                resultElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
+                        });
+                    } catch (error) {
+                        state.errors = error.message.split('\n');
+                        state.result = null;
+                        state.calculatedTarget = null;
+                    } finally {
+                        state.calculating = false;
+                    }
+                };
+
+                // 修改防抖处理，移除自动计算功能
+                watch(
+                    () => ({
+                        numbers: [...state.numbers],
+                        target: state.target,
+                        priorityNumber: state.priorityNumber
+                    }),
+                    () => {
+                        // 只在数据变化时重置结果，不自动计算
+                        state.result = null;
+                        state.calculatedTarget = null;
+                        state.errors = validateInputRealTime.value;
+                    },
+                    { deep: true }
+                );
+
+                const importNumbers = () => {
+                    try {
+                        const numbers = state.tempNumbers
+                            .split('\n')
+                            .map(line => line.trim())
+                            .filter(line => line)
+                            .map(line => {
+                                const [value, maxCount] = line.split(',').map(n => parseInt(n.trim()));
+                                return { value, maxCount: maxCount || 999999 };
+                            });
+
+                        if (numbers.length === 0) throw new Error('没有有效的数字');
+
+                        // 验证导入的数字
+                        const errors = [];
+                        const seen = new Set();
+                        numbers.forEach(({ value, maxCount }) => {
+                            if (seen.has(value)) errors.push(`数字 ${value} 重复`);
+                            seen.add(value);
+                            if (value <= 1) errors.push(`数字 ${value} 必须大于1`);
+                            if (maxCount <= 0) errors.push(`数字 ${value} 的最大次数必须大于0`);
+                        });
+
+                        if (errors.length > 0) throw new Error(errors.join('\n'));
+
+                        state.numbers = numbers;
+                        state.isEditing = false;
+                        state.tempNumbers = '';
+                    } catch (error) {
+                        state.errors = error.message.split('\n');
+                    }
+                };
+
+                const exportNumbers = () => {
+                    state.tempNumbers = state.numbers
+                        .map(n => `${n.value},${n.maxCount}`)
+                        .join('\n');
+                    state.isEditing = true;
+                };
+
+                const resetCalculator = () => {
+                    if (confirm('确定要重置所有数据吗？')) {
+                        state.numbers = [
+                            { value: 998, maxCount: 3 },
+                            { value: 358, maxCount: 999999 },
+                            { value: 258, maxCount: 999999 },
+                            { value: 198, maxCount: 999999 }
+                        ];
+                        state.target = 0;
+                        state.priorityNumber = 358;
+                        state.result = null;
+                        state.errors = [];
+                        state.isEditing = false;
+                        state.tempNumbers = '';
+                        state.userInteracted = false; // 重置用户交互状态
+                        localStorage.removeItem('calculatorState');
+                    }
+                };
+
+                // 对数字输入和目标值的变化进行防抖处理
+                watch(
+                    () => ({
+                        numbers: [...state.numbers],
+                        target: state.target,
+                        priorityNumber: state.priorityNumber
+                    }),
+                    debounce(() => {
+                        if (!state.errors.length && !state.calculating) {
+                            calculate();
+                        }
+                    }, 500),
+                    { deep: true }
+                );
+
+                // 监听用户输入，标记交互状态
+                watch(
+                    () => ({
+                        numbers: [...state.numbers],
+                        target: state.target,
+                        priorityNumber: state.priorityNumber
+                    }),
+                    () => {
+                        if (!state.userInteracted) {
+                            state.userInteracted = true;
+                        }
+                        // 重置结果
+                        state.result = null;
+                        state.calculatedTarget = null;
+                        state.errors = validateInputRealTime.value;
+                    },
+                    { deep: true }
+                );
+
+                return {
+                    ...toRefs(state),
+                    ...computedProps,
+                    addNumber,
+                    removeNumber,
+                    calculate,
+                    toggleDarkMode,
+                    importNumbers,
+                    exportNumbers,
+                    resetCalculator
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
 </html>
