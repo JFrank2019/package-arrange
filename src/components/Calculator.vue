@@ -20,7 +20,6 @@ const calculate = async () => {
   if (calculating.value) return
 
   calculating.value = true
-  store.resetResult()
 
   try {
     store.validateInput()
@@ -59,7 +58,6 @@ watch(
     }
     store.resetResult()
     store.validateInputRealTime()
-    store.debouncedCalculate()
   },
   { deep: true },
 )

@@ -293,7 +293,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
     }),
     () => {
       validateInputRealTime()
-      debouncedCalculate()
+      // 移除自动计算，只在输入改变时验证输入
     },
     { deep: true },
   )

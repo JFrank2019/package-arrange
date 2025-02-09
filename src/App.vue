@@ -9,7 +9,7 @@ const { isDarkMode, toggleDarkMode } = useDarkMode()
   <div
     class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-all duration-300 flex items-center justify-center"
   >
-    <div class="w-full py-6">
+    <div class="w-full">
       <button
         @click="toggleDarkMode"
         class="fixed top-4 right-4 p-3 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl z-50 backdrop-blur-sm bg-opacity-80 dark:bg-opacity-80"
