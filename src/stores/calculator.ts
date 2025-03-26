@@ -27,14 +27,14 @@ interface DebounceOptions {
   immediate?: boolean
 }
 
-function debounce<T extends (...args: any[]) => any>(
+function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
   delay: number,
   options: DebounceOptions = {},
 ) {
   let timer: NodeJS.Timeout | null = null
 
-  return function (this: any, ...args: Parameters<T>) {
+  return function (this: unknown, ...args: Parameters<T>) {
     if (options.immediate && !timer) {
       fn.apply(this, args)
     }
@@ -161,7 +161,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
     })
 
     // 创建 DP 数组
-    const dp = new Array(targetValue + 1).fill(null).map(() => ({
+    const dp = Array.from({ length: targetValue + 1 }, () => ({
       possible: false,
       priorityCount: 0,
       combination: {} as Record<number, number>,

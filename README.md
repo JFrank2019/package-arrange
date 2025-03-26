@@ -1,39 +1,86 @@
-# package-arrangement
+# Package Arrangement
 
-This template should help get you started developing with Vue 3 in Vite.
+基于 Vue 3 + TypeScript + Vite + Tailwind CSS 构建的现代化数字组合计算器，采用 Apple Design 风格设计。
 
-## Recommended IDE Setup
+## ✨ 特性
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- 🧮 **强大的组合计算**：根据输入的数字和目标值，计算最优组合方案
+- 🌓 **深色模式支持**：无缝切换明暗主题，兼容系统首选项
+- 🎨 **Apple Design 风格**：遵循 Apple 设计语言，提供一致的用户体验
+- 📱 **响应式布局**：完美适配各种设备，从移动端到桌面端
+- 🚀 **高性能实现**：使用动态规划算法，高效处理复杂计算
+- 🧩 **模块化架构**：基于组件化设计，代码结构清晰
 
-## Type Support for `.vue` Imports in TS
+## 🛠️ 技术栈
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+- **框架**: Vue 3 + TypeScript
+- **构建工具**: Vite
+- **状态管理**: Pinia
+- **路由**: Vue Router
+- **UI 组件**: shadcn-vue
+- **样式**: Tailwind CSS
+- **类型检查**: TypeScript + ESLint
+- **测试**: Vitest (计划中)
 
-## Customize configuration
+## 📦 项目结构
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+```
+src/
+├── assets/         # 静态资源
+├── components/     # 组件
+│   ├── ui/         # 基础 UI 组件
+│   └── calculator/ # 计算器相关组件
+├── composables/    # 可复用的组合式函数
+├── lib/            # 工具函数库
+├── router/         # 路由配置
+├── stores/         # Pinia 状态管理
+└── views/          # 页面视图
 ```
 
-### Compile and Hot-Reload for Development
+## 🚀 开发指南
 
-```sh
-npm run dev
+### 安装依赖
+
+```bash
+pnpm install
 ```
 
-### Type-Check, Compile and Minify for Production
+### 启动开发服务器
 
-```sh
-npm run build
+```bash
+pnpm dev
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### 构建生产版本
 
-```sh
-npm run lint
+```bash
+pnpm build
 ```
+
+### 运行测试
+
+```bash
+pnpm test
+```
+
+### 代码检查
+
+```bash
+pnpm lint
+```
+
+## 🔄 版本历史
+
+详见 [CHANGELOG.md](./CHANGELOG.md) 文件。
+
+## 🤝 贡献指南
+
+1. Fork 本仓库
+2. 创建你的特性分支 (`git checkout -b feature/amazing-feature`)
+3. 提交你的更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 开启一个 Pull Request
+
+## 📝 License
+
+MIT

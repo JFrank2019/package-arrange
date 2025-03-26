@@ -1,4 +1,4 @@
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 
 export function useDarkMode() {
   const isDarkMode = ref(false)
@@ -28,22 +28,6 @@ export function useDarkMode() {
       }
     })
   })
-
-  const lightTheme = {
-    '--bg-primary': '#ffffff',
-    '--bg-secondary': '#f5f5f5',
-    '--bg-tertiary': '#e0e0e0',
-    '--bg-hover': '#d5d5d5',
-    '--text-primary': '#333333',
-  }
-
-  const darkTheme = {
-    '--bg-primary': '#1a1a1a',
-    '--bg-secondary': '#2d2d2d',
-    '--bg-tertiary': '#404040',
-    '--bg-hover': '#505050',
-    '--text-primary': '#ffffff',
-  }
 
   return {
     isDarkMode,

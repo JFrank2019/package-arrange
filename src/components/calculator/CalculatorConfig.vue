@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { useCalculatorStore } from '@/stores/calculator'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 
 const store = useCalculatorStore()
 
@@ -63,168 +66,149 @@ const resetCalculator = () => {
 </script>
 
 <template>
-  <div
-    class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 transform transition-all duration-300"
-  >
-    <div class="flex flex-wrap justify-between items-center mb-6">
-      <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-2 sm:mb-0">配置参数</h2>
-      <div class="space-x-2 flex">
-        <button
-          v-if="!store.isEditing"
-          @click="exportNumbers"
-          class="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 shadow hover:shadow-md transform hover:-translate-y-0.5"
-        >
-          批量编辑
-        </button>
-        <button
-          @click="resetCalculator"
-          class="px-4 py-2 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-300 shadow hover:shadow-md transform hover:-translate-y-0.5"
-        >
-          重置
-        </button>
+  <Card class="mb-8">
+    <CardHeader>
+      <div class="flex flex-wrap justify-between items-center">
+        <CardTitle class="text-2xl font-semibold mb-2 sm:mb-0">配置参数</CardTitle>
+        <div class="space-x-2 flex">
+          <Button v-if="!store.isEditing" @click="exportNumbers" variant="secondary" size="sm">
+            批量编辑
+          </Button>
+          <Button @click="resetCalculator" variant="outline" size="sm"> 重置 </Button>
+        </div>
       </div>
-    </div>
-
-    <!-- 批量编辑模式 -->
-    <div v-if="store.isEditing" class="mb-4">
-      <div class="mb-3 text-sm text-gray-600 dark:text-gray-400">
-        每行输入一个数字配置，格式：数字,最大次数（最大次数可选，默认999999）
-      </div>
-      <textarea
-        v-model="store.tempNumbers"
-        class="w-full h-40 p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-        placeholder="例如：
+    </CardHeader>
+    <CardContent>
+      <!-- 批量编辑模式 -->
+      <div v-if="store.isEditing" class="mb-4">
+        <div class="mb-3 text-sm text-muted-foreground">
+          每行输入一个数字配置，格式：数字,最大次数（最大次数可选，默认999999）
+        </div>
+        <textarea
+          v-model="store.tempNumbers"
+          class="w-full h-40 p-3 border rounded-lg bg-background border-input text-foreground focus:ring-2 focus:ring-ring focus:border-input transition-all duration-300 text-sm"
+          placeholder="例如：
 998,3
 358
 258
 198"
-      ></textarea>
-      <div class="flex justify-end space-x-3 mt-3">
-        <button
-          @click="((store.isEditing = false), (store.tempNumbers = ''))"
-          class="px-4 py-2 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-300 shadow hover:shadow-md transform hover:-translate-y-0.5"
-        >
-          取消
-        </button>
-        <button
-          @click="importNumbers"
-          class="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 shadow hover:shadow-md transform hover:-translate-y-0.5"
-        >
-          保存
-        </button>
-      </div>
-    </div>
-
-    <!-- 常规编辑模式 -->
-    <div v-else class="space-y-6">
-      <div class="overflow-x-auto -mx-4 sm:mx-0">
-        <div class="inline-block min-w-full align-middle">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th
-                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >
-                  数字值
-                </th>
-                <th
-                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >
-                  最大使用次数
-                </th>
-                <th
-                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr
-                v-for="(number, index) in store.numbers"
-                :key="index"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <td class="px-4 py-3 whitespace-nowrap">
-                  <input
-                    type="number"
-                    v-model.number="number.value"
-                    placeholder="数字值"
-                    min="1"
-                    class="w-full sm:w-32 p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 transition-all duration-300"
-                  />
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                  <input
-                    type="number"
-                    v-model.number="number.maxCount"
-                    placeholder="最大次数"
-                    min="0"
-                    class="w-full sm:w-32 p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 transition-all duration-300"
-                  />
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                  <button
-                    @click="removeNumber(index)"
-                    class="w-full sm:w-auto px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 shadow hover:shadow-md transform hover:-translate-y-0.5"
-                  >
-                    删除
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        ></textarea>
+        <div class="flex justify-end space-x-3 mt-3">
+          <Button
+            @click="((store.isEditing = false), (store.tempNumbers = ''))"
+            variant="outline"
+            size="sm"
+          >
+            取消
+          </Button>
+          <Button @click="importNumbers" variant="default" size="sm"> 保存 </Button>
         </div>
       </div>
 
-      <button
-        @click="addNumber"
-        class="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 shadow hover:shadow-md transform hover:-translate-y-0.5 text-sm font-medium"
-      >
-        添加新数字
-      </button>
-
-      <!-- 修改目标值和优先数字选择表格 -->
-      <div class="overflow-x-auto -mx-4 sm:mx-0 mt-6">
-        <div class="inline-block min-w-full align-middle">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <td
-                  class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-700 dark:text-gray-200"
-                >
-                  目标值：
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                  <input
-                    type="number"
-                    v-model.number="store.target"
-                    min="0"
-                    class="w-full sm:w-32 p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 transition-all duration-300"
-                  />
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <td
-                  class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-700 dark:text-gray-200"
-                >
-                  优先使用的数字：
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                  <select
-                    v-model.number="store.priorityNumber"
-                    class="w-full sm:w-32 p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 transition-all duration-300"
+      <!-- 常规编辑模式 -->
+      <div v-else class="space-y-6">
+        <div class="overflow-x-auto -mx-4 sm:mx-0">
+          <div class="inline-block min-w-full align-middle">
+            <table class="min-w-full divide-y divide-border">
+              <thead class="bg-muted/30">
+                <tr>
+                  <th
+                    class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
                   >
-                    <option v-for="num in store.numbers" :key="num.value" :value="num.value">
-                      {{ num.value }}
-                    </option>
-                  </select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    数字值
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                  >
+                    最大使用次数
+                  </th>
+                  <th
+                    class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                  >
+                    操作
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-card divide-y divide-border">
+                <tr
+                  v-for="(number, index) in store.numbers"
+                  :key="index"
+                  class="hover:bg-muted/20 transition-colors"
+                >
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <Input
+                      type="number"
+                      v-model.number="number.value"
+                      placeholder="数字值"
+                      min="1"
+                      class="w-full sm:w-32 text-sm"
+                    />
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <Input
+                      type="number"
+                      v-model.number="number.maxCount"
+                      placeholder="最大次数"
+                      min="0"
+                      class="w-full sm:w-32 text-sm"
+                    />
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <Button
+                      @click="removeNumber(index)"
+                      variant="destructive"
+                      size="sm"
+                      class="w-full sm:w-auto"
+                    >
+                      删除
+                    </Button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <Button @click="addNumber" variant="secondary" class="w-full"> 添加新数字 </Button>
+
+        <!-- 修改目标值和优先数字选择表格 -->
+        <div class="overflow-x-auto -mx-4 sm:mx-0 mt-6">
+          <div class="inline-block min-w-full align-middle">
+            <table class="min-w-full divide-y divide-border">
+              <tbody class="bg-card divide-y divide-border">
+                <tr class="hover:bg-muted/20 transition-colors">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-foreground">
+                    目标值：
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <Input
+                      type="number"
+                      v-model.number="store.target"
+                      min="0"
+                      class="w-full sm:w-32 text-sm"
+                    />
+                  </td>
+                </tr>
+                <tr class="hover:bg-muted/20 transition-colors">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-foreground">
+                    优先使用的数字：
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <select
+                      v-model.number="store.priorityNumber"
+                      class="w-full sm:w-32 p-2 text-sm border rounded-lg border-input bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-input transition-all duration-300"
+                    >
+                      <option v-for="num in store.numbers" :key="num.value" :value="num.value">
+                        {{ num.value }}
+                      </option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
+    </CardContent>
+  </Card>
 </template>

@@ -9,11 +9,16 @@ defineProps<{
 <template>
   <div
     v-if="show"
-    class="bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200 p-4 rounded transform transition-all duration-300 error-shake"
+    class="bg-destructive/10 border-l-4 border-destructive text-destructive p-4 rounded-lg transform transition-all duration-300 error-shake"
     :class="calculating ? 'scale-105 shadow-lg' : ''"
   >
     <div class="flex items-start">
-      <svg class="w-5 h-5 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -22,8 +27,8 @@ defineProps<{
         />
       </svg>
       <div>
-        <p class="font-bold mb-2">请检查以下错误：</p>
-        <ul class="list-disc pl-5 space-y-1">
+        <p class="font-semibold mb-2 font-display">请检查以下错误：</p>
+        <ul class="list-disc pl-5 space-y-1 text-sm">
           <li
             v-for="(error, index) in errors"
             :key="index"
@@ -52,6 +57,6 @@ defineProps<{
 }
 
 .error-shake {
-  animation: shake 0.5s ease-in-out;
+  animation: shake 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 </style>
