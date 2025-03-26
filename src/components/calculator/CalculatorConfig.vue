@@ -6,10 +6,17 @@ import { Input } from '@/components/ui/input'
 
 const store = useCalculatorStore()
 
+/**
+ * 添加一个新数字到配置中
+ */
 const addNumber = () => {
   store.numbers.push({ value: 1, maxCount: 999999 })
 }
 
+/**
+ * 删除指定索引的数字
+ * @param index 要删除的数字索引
+ */
 const removeNumber = (index: number) => {
   if (store.numbers.length > 1) {
     store.numbers.splice(index, 1)
@@ -18,6 +25,9 @@ const removeNumber = (index: number) => {
   }
 }
 
+/**
+ * 导入批量编辑的数字
+ */
 const importNumbers = () => {
   try {
     const numbers = store.tempNumbers
@@ -53,11 +63,17 @@ const importNumbers = () => {
   }
 }
 
+/**
+ * 导出数字到批量编辑模式
+ */
 const exportNumbers = () => {
   store.tempNumbers = store.numbers.map((n) => `${n.value},${n.maxCount}`).join('\n')
   store.isEditing = true
 }
 
+/**
+ * 重置计算器的所有配置
+ */
 const resetCalculator = () => {
   if (confirm('确定要重置所有数据吗？')) {
     store.$reset()
@@ -66,7 +82,7 @@ const resetCalculator = () => {
 </script>
 
 <template>
-  <Card class="mb-8">
+  <Card class="mb-8 border shadow-sm">
     <CardHeader>
       <div class="flex flex-wrap justify-between items-center">
         <CardTitle class="text-2xl font-semibold mb-2 sm:mb-0">配置参数</CardTitle>
@@ -107,10 +123,10 @@ const resetCalculator = () => {
 
       <!-- 常规编辑模式 -->
       <div v-else class="space-y-6">
-        <div class="overflow-x-auto -mx-4 sm:mx-0">
+        <div class="overflow-x-auto -mx-4 sm:mx-0 rounded-lg border">
           <div class="inline-block min-w-full align-middle">
             <table class="min-w-full divide-y divide-border">
-              <thead class="bg-muted/30">
+              <thead class="bg-muted/50">
                 <tr>
                   <th
                     class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
@@ -141,7 +157,7 @@ const resetCalculator = () => {
                       v-model.number="number.value"
                       placeholder="数字值"
                       min="1"
-                      class="w-full sm:w-32 text-sm"
+                      class="w-full sm:w-32 text-sm transition-all focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap">
@@ -150,7 +166,7 @@ const resetCalculator = () => {
                       v-model.number="number.maxCount"
                       placeholder="最大次数"
                       min="0"
-                      class="w-full sm:w-32 text-sm"
+                      class="w-full sm:w-32 text-sm transition-all focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap">
@@ -158,7 +174,7 @@ const resetCalculator = () => {
                       @click="removeNumber(index)"
                       variant="destructive"
                       size="sm"
-                      class="w-full sm:w-auto"
+                      class="w-full sm:w-auto transition-all duration-200 hover:shadow-md"
                     >
                       删除
                     </Button>
@@ -169,10 +185,16 @@ const resetCalculator = () => {
           </div>
         </div>
 
-        <Button @click="addNumber" variant="secondary" class="w-full"> 添加新数字 </Button>
+        <Button
+          @click="addNumber"
+          variant="secondary"
+          class="w-full hover:bg-secondary/90 transition-all duration-200"
+        >
+          添加新数字
+        </Button>
 
         <!-- 修改目标值和优先数字选择表格 -->
-        <div class="overflow-x-auto -mx-4 sm:mx-0 mt-6">
+        <div class="overflow-x-auto -mx-4 sm:mx-0 mt-6 rounded-lg border">
           <div class="inline-block min-w-full align-middle">
             <table class="min-w-full divide-y divide-border">
               <tbody class="bg-card divide-y divide-border">
@@ -185,7 +207,7 @@ const resetCalculator = () => {
                       type="number"
                       v-model.number="store.target"
                       min="0"
-                      class="w-full sm:w-32 text-sm"
+                      class="w-full sm:w-32 text-sm transition-all focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </td>
                 </tr>
@@ -212,3 +234,26 @@ const resetCalculator = () => {
     </CardContent>
   </Card>
 </template>
+
+<style scoped>
+/* 为输入框添加过渡效果 */
+input,
+select {
+  transition: all 0.2s ease-in-out;
+}
+
+input:focus,
+select:focus {
+  transform: translateY(-1px);
+}
+
+/* 增加表格行的视觉分离度 */
+tr {
+  border-bottom: 1px solid rgba(var(--border), 0.1);
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+</style>

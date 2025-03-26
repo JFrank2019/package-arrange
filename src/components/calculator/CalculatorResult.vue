@@ -10,14 +10,14 @@ const store = useCalculatorStore()
 
 <template>
   <div
-    class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mt-8 calculation-result transition-opacity duration-300"
+    class="bg-card rounded-lg shadow-md p-6 mt-8 calculation-result transition-opacity duration-300 border"
     :class="{ 'opacity-0': calculating, 'opacity-100': !calculating }"
   >
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200">计算结果</h2>
+      <h2 class="text-xl font-semibold text-foreground">计算结果</h2>
       <button
         @click="store.resetResult()"
-        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        class="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full hover:bg-muted/30"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -33,50 +33,49 @@ const store = useCalculatorStore()
     <div class="space-y-6">
       <!-- 数据概览卡片 -->
       <div class="grid grid-cols-2 gap-4">
-        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">目标值</p>
-          <p class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+        <div class="result-card">
+          <p class="text-sm text-muted-foreground mb-2">目标值</p>
+          <p class="text-2xl font-semibold text-foreground">
             {{ store.calculatedTarget }}
           </p>
         </div>
-        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">最接近的和</p>
-          <p class="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+        <div class="result-card">
+          <p class="text-sm text-muted-foreground mb-2">最接近的和</p>
+          <p class="text-2xl font-semibold text-foreground">
             {{ store.result?.sum }}
           </p>
         </div>
-        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">差值</p>
-          <div class="text-lg font-medium text-gray-700 dark:text-gray-200">
+        <div class="result-card">
+          <p class="text-sm text-muted-foreground mb-2">差值</p>
+          <div class="text-lg font-medium text-foreground">
             还差：
-            {{ store.calculatedTarget && store.calculatedTarget - (store.result?.sum || 0) }}
+            <span class="font-semibold">{{
+              store.calculatedTarget && store.calculatedTarget - (store.result?.sum || 0)
+            }}</span>
           </div>
         </div>
-        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">优先数字使用次数</p>
-          <p class="text-2xl font-semibold text-blue-500">
+        <div class="result-card">
+          <p class="text-sm text-muted-foreground mb-2">优先数字使用次数</p>
+          <p class="text-2xl font-semibold text-primary">
             {{ store.priorityNumber }}: {{ store.result?.priorityCount }}次
           </p>
         </div>
       </div>
 
       <!-- 数字组合结果 -->
-      <div class="border-t dark:border-gray-700 pt-6">
-        <p class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-4">使用的数字组合</p>
+      <div class="border-t border-border pt-6">
+        <p class="text-lg font-medium text-foreground mb-4">使用的数字组合</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <template v-for="(count, number) in store.result?.combination || {}" :key="number">
             <div
               v-if="count > 0"
               :class="
-                String(number) === String(store.priorityNumber)
-                  ? 'text-blue-500'
-                  : 'text-gray-700 dark:text-gray-200'
+                String(number) === String(store.priorityNumber) ? 'combo-item-active' : 'combo-item'
               "
-              class="flex items-center space-x-2"
             >
-              <span class="font-medium">{{ number }}</span>
+              <span class="font-medium text-lg">{{ number }}</span>
               <span>×</span>
-              <span>{{ count }}</span>
+              <span class="font-semibold">{{ count }}</span>
             </div>
           </template>
         </div>
@@ -84,3 +83,33 @@ const store = useCalculatorStore()
     </div>
   </div>
 </template>
+
+<style scoped>
+.result-card {
+  @apply bg-muted/30 p-6 rounded-lg shadow-sm border border-border/60 hover:border-primary/20 hover:shadow-md transition-all duration-200;
+}
+
+.combo-item {
+  @apply flex items-center space-x-2 p-3 rounded-md bg-muted/20 border border-border/40 hover:bg-muted/40 transition-colors;
+}
+
+.combo-item-active {
+  @apply flex items-center space-x-2 p-3 rounded-md bg-primary/10 border border-primary/30 text-primary hover:bg-primary/15 transition-colors;
+}
+
+/* 暗色模式增强 */
+:global(.dark) .result-card {
+  background-color: rgba(30, 41, 59, 0.3);
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+:global(.dark) .combo-item {
+  background-color: rgba(30, 41, 59, 0.4);
+  border-color: rgba(30, 41, 59, 0.8);
+}
+
+:global(.dark) .combo-item-active {
+  background-color: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+</style>

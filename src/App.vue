@@ -7,19 +7,18 @@ const { isDarkMode, toggleDarkMode } = useDarkMode()
 </script>
 
 <template>
-  <div
-    class="min-h-screen bg-background transition-colors duration-300 font-sans antialiased overflow-hidden"
-  >
+  <div class="min-h-screen bg-background transition-colors duration-300 font-sans antialiased">
     <header
-      class="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-background/80 border-b border-border/40"
+      class="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg shadow-md border-b header-border"
+      :class="isDarkMode ? 'bg-gray-800/90 dark-nav' : 'bg-white/95'"
     >
-      <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="container mx-auto px-6 h-16 flex items-center justify-between">
         <div class="text-xl font-display font-semibold text-foreground">Package Arrangement</div>
         <Button
           @click="toggleDarkMode"
-          variant="ghost"
+          variant="outline"
           size="icon"
-          class="rounded-full hover:bg-secondary"
+          class="rounded-full hover:bg-secondary transition-colors duration-200"
           :aria-label="isDarkMode ? '切换到亮色模式' : '切换到暗色模式'"
         >
           <svg
@@ -38,7 +37,7 @@ const { isDarkMode, toggleDarkMode } = useDarkMode()
           </svg>
           <svg
             v-else
-            class="w-5 h-5 text-apple-accent-cyan"
+            class="w-5 h-5 text-primary"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -54,22 +53,24 @@ const { isDarkMode, toggleDarkMode } = useDarkMode()
       </div>
     </header>
 
-    <main class="container mx-auto px-4 pt-24 pb-16">
-      <RouterView v-slot="{ Component }">
-        <transition
-          name="fade"
-          mode="out-in"
-          appear
-          enter-active-class="transition-all duration-300 ease-out"
-          enter-from-class="opacity-0 translate-y-4"
-          enter-to-class="opacity-100 translate-y-0"
-          leave-active-class="transition-all duration-200 ease-in"
-          leave-from-class="opacity-100 translate-y-0"
-          leave-to-class="opacity-0 translate-y-4"
-        >
-          <component :is="Component" />
-        </transition>
-      </RouterView>
+    <main class="flex justify-center pt-24 pb-16 px-4">
+      <div class="w-full max-w-7xl">
+        <RouterView v-slot="{ Component }">
+          <transition
+            name="fade"
+            mode="out-in"
+            appear
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 translate-y-4"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition-all duration-200 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 translate-y-4"
+          >
+            <component :is="Component" />
+          </transition>
+        </RouterView>
+      </div>
     </main>
   </div>
 </template>
@@ -86,5 +87,26 @@ body {
 #app {
   width: 100%;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.dark-nav {
+  border-bottom-color: rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.header-border {
+  border-color: rgba(var(--border), 0.5);
+}
+
+.dark .dark-nav {
+  background-color: rgba(30, 41, 59, 0.95) !important;
 }
 </style>
