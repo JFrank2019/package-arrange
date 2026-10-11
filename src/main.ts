@@ -9,6 +9,8 @@ import router from './router'
 // 引入 Tailwind CSS
 import './index.css'
 
+console.log(import.meta.env.VITE_APP_API_URL)
+
 const app = createApp(App)
 
 app.use(createPinia())
